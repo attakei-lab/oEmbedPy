@@ -21,6 +21,10 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
     "Topic :: Utilities",
 ]
+dependencies = [
+    "BeautifulSoup4",
+    "httpx",
+]
 dynamic = ["version", "description"]
 
 [project.optional-dependencies]
