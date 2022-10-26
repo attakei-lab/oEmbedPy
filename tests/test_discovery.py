@@ -19,7 +19,7 @@ def test_find_refs__body_json_only(httpserver: HTTPServer):  # noqa: D103
     )
     consumer_req = discovery.ConsumerRequest(
         endpoint="http://example.com/oembed",
-        url="http://example.com/content",
+        content_url="http://example.com/content",
     )
     result = discovery.find_refs(httpserver.url_for("/"))
     assert len(result) == 1

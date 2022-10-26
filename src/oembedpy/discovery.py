@@ -20,19 +20,19 @@ class ConsumerRequest:
     """Parameter set for consumer-request."""
 
     endpoint: str
-    url: str
+    content_url: str
     maxwidth: Optional[Number] = None
     maxheight: Optional[Number] = None
     format: Optional[str] = None
 
     @classmethod
-    def from_url(cls, full_url: str) -> "ConsumerRequest":
+    def from_url(cls, url: str) -> "ConsumerRequest":
         """Create object from full URL to provider API."""
-        parsed = urlparse(full_url)
+        parsed = urlparse(url)
         qs = parse_qs(parsed.query)
         return cls(
             endpoint=f"{parsed.scheme}://{parsed.hostname}{parsed.path}",
-            url=qs["url"][0],
+            content_url=qs["url"][0],
         )
 
 
