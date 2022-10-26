@@ -25,6 +25,16 @@ class ConsumerRequest:
     maxheight: Optional[Number] = None
     format: Optional[str] = None
 
+    @classmethod
+    def from_url(cls, full_url: str) -> "ConsumerRequest":
+        """Create object from full URL to provider API."""
+        parsed = urlparse(full_url)
+        qs = parse_qs(parsed.query)
+        return cls(
+            endpoint=f"{parsed.scheme}://{parsed.hostname}{parsed.path}",
+            url=qs["url"][0],
+        )
+
 
 def find_refs(content_url: str) -> Dict[str, ConsumerRequest]:
     """Discover URLs of provider from content.
@@ -34,6 +44,24 @@ def find_refs(content_url: str) -> Dict[str, ConsumerRequest]:
     """
     resources = {}
     resp = httpx.get(content_url)
+    # Parse response header
+    for key, val in resp.headers.multi_items():
+        print(key, val)
+        if key.lower() != "link":
+            continue
+        values = val.split("; ")
+        if len(values) == 1:
+            continue
+        meta = dict(v.split("=") for v in values[1:])
+        meta = {k: v[1:-1] for k, v in meta.items()}
+        if "rel" not in meta or meta["rel"] != "alternate":
+            continue
+        if "type" not in meta or meta["type"] not in OEMBED_MIME_TYPES:
+            continue
+        resources[OEMBED_MIME_TYPES[meta["type"]]] = ConsumerRequest.from_url(
+            values[0][1:-1]
+        )
+    # Parse response body
     soup = BeautifulSoup(resp.content, "html.parser")
     attrs = {
         "rel": "alternate",
