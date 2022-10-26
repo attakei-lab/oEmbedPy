@@ -68,11 +68,7 @@ def find_refs(content_url: str) -> Dict[str, ConsumerRequest]:
         "type": lambda v: v in OEMBED_MIME_TYPES,
     }
     for elm in soup.find_all("link", attrs):
-        url = urlparse(elm["href"])
-        qs = parse_qs(url.query)
-        req = ConsumerRequest(
-            endpoint=f"{url.scheme}://{url.hostname}{url.path}",
-            url=qs["url"][0],
+        resources[OEMBED_MIME_TYPES[elm["type"]]] = ConsumerRequest.from_url(
+            elm["href"]
         )
-        resources[OEMBED_MIME_TYPES[elm["type"]]] = req
     return resources
