@@ -1,22 +1,52 @@
 # noqa: D100
+from pytest_httpserver import HTTPServer
 from oembedpy import discovery
 
 
-def test_find_refs__body_json_only():  # noqa: D103
-    url = "https://speakerdeck.com/attakei/converting-pure-rest-to-revealjs"
-    consumer_req = discovery.ConsumerRequest(
-        endpoint="https://speakerdeck.com/oembed.json",
-        url=url,
+def test_find_refs__body_json_only(httpserver: HTTPServer):  # noqa: D103
+    httpserver.expect_request("/").respond_with_data(
+        """
+        <html>
+            <head>
+                <link
+                    rel="alternate"
+                    type="application/json+oembed"
+                    href="http://example.com/oembed?url=http%3A%2F%2Fexample.com%2Fcontent"
+                />
+            </head>
+        </html>
+    """
     )
-    result = discovery.find_refs(url)
+    consumer_req = discovery.ConsumerRequest(
+        endpoint="http://example.com/oembed",
+        url="http://example.com/content",
+    )
+    result = discovery.find_refs(httpserver.url_for("/"))
     assert len(result) == 1
     assert "json" in result
     assert result["json"] == consumer_req
 
 
-def test_find_refs__body_json_and_xml():  # noqa: D103
-    url = "https://www.youtube.com/watch?v=Y18v-HsxEAU"
-    result = discovery.find_refs(url)
+def test_find_refs__body_json_and_xml(httpserver: HTTPServer):  # noqa: D103
+    httpserver.expect_request("/").respond_with_data(
+        """
+        <html>
+            <head>
+                <link
+                    rel="alternate"
+                    type="application/json+oembed"
+                    href="http://example.com/oembed?url=http%3A%2F%2Fexample.com%2Fcontent&format=json"
+                />
+                <link
+                    rel="alternate"
+                    type="text/xml+oembed"
+                    href="http://example.com/oembed?url=http%3A%2F%2Fexample.com%2Fcontent&format=xml"
+                />
+            </head>
+        </html>
+    """
+    )
+    result = discovery.find_refs(httpserver.url_for("/"))
     assert len(result) == 2
     assert "json" in result
     assert "xml" in result
