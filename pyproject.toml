@@ -21,11 +21,16 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
     "Topic :: Utilities",
 ]
+dependencies = [
+    "BeautifulSoup4",
+    "httpx",
+]
 dynamic = ["version", "description"]
 
 [project.optional-dependencies]
 test = [
     "pytest >=7.2.0,<8",
+    "pytest-httpserver >=1.0.6,<2",
 ]
 doc = [
     "Sphinx >=5.3.0,<6",
