@@ -3,6 +3,11 @@ from dataclasses import dataclass, field
 from fnmatch import fnmatch
 from typing import Dict, List, Optional
 
+import httpx
+
+
+DEFAULT_PROVIDERS = "https://oembed.com/providers.json"
+
 
 @dataclass
 class Endpoint:
@@ -62,3 +67,17 @@ class EndpointRepository:
             if fnmatch(url, scheme):
                 return endpoint
         return None
+
+
+def configure_repository(url: str = DEFAULT_PROVIDERS) -> EndpointRepository:
+    """Create endpoint-repository bundled from oembed.com providers."""
+    resp = httpx.get(url)
+    repo = EndpointRepository([])
+    for provider in resp.json():
+        try:
+            provider_ = Provider.parse_obj(provider)
+            repo.register_provider(provider_)
+        except TypeError:
+            # TODO: Logging
+            pass
+    return repo
