@@ -40,7 +40,7 @@ def fetch_content(url: str, params: RequestParameters) -> types.Content:
     * OK: ``text/xml``
     * NG: ``text/plain`` (even if body is JSON string)
     """
-    resp = httpx.get(url, params=params.to_dict())
+    resp = httpx.get(url, params=params.to_dict(), follow_redirects=True)
     resp.raise_for_status()
     content_type = resp.headers.get("content-type", "").split(";")[0]  # Exclude chaset
     if content_type.endswith("/json"):
